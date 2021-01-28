@@ -1,0 +1,9 @@
+{
+    "name": "isueit/plannedprograms",
+    "type": "drupal-custom-module",
+    "description": "Module to handle Planned Programs in the Program Catalog",
+    "repositories": {
+        "type": "git",
+        "url": "git@github.com:isueit/plannedprograms.git"
+    }
+}

@@ -1,0 +1,139 @@
+<?php
+
+use \Drupal\node\Entity\Node;
+use \Drupal\taxonomy\Entity\Term;
+
+/**
+* Implements hook_rebuild().
+*/
+function plannedprograms_rebuild() {
+  plannedprograms_handle_feed();
+}
+
+/**
+* Implements hook_cron().
+*/
+function plannedprograms_cron() {
+  plannedprograms_handle_feed();
+}
+
+/**
+ * Pull in the feed
+ */
+function plannedprograms_handle_feed() {
+  // Get all Staff Profile nodes
+  $nids = \Drupal::entityQuery('node')->condition('type', 'planned_program')->execute();
+  $nodes =  Node::loadMultiple($nids);
+
+  $fromFeed = file_get_contents('https://datastore.exnet.iastate.edu/mydata/PlannedPrograms.json');
+  $plannedPrograms = json_decode($fromFeed, TRUE);
+
+  if (sizeof($plannedPrograms) < 100) {
+    \Drupal::logger('plannedprograms')->info('Not enough records - exiting');
+    return;
+  }
+
+  // Mark nodes as "stale"
+  foreach ($nodes as $node) {
+    if ($node->isPublished()) {
+      $node->set('field_stale', TRUE)->save();
+    }
+  }
+
+  // Handle each planned program
+  foreach ($plannedPrograms as $program) {
+    // Find the right node if it exists
+    $mynode = array();
+    foreach ($nodes as $node) {
+      if ($node->field_mydata_id->value == $program['Id']) {
+        $mynode = $node;
+        break;
+      }
+    }
+
+    // Create a new one if not found
+    if (empty($mynode)) {
+      $mynode = Node::create(['type' => 'planned_program', 'title'=>$program['Name']]);
+    }
+
+    // General Information
+    $mynode->setTitle($program['Name']);
+    $mynode->field_mydata_id->value = $program['Id'];
+    $mynode->set('field_stale', FALSE)->save();
+    $mynode->field_event_title_filter->value = $program['Name'];
+
+
+    // Handle website link
+    $mynode->field_website->value = $program['Planned_Program_Website__c'];
+    if (!empty($mynode->field_website->value) && 'htt' != substr($mynode->field_website->value,0,3)) {
+      $mynode->field_website->value = 'https://' . $mynode->field_website->value;
+    }
+
+    // Handle Body
+    if (!empty($program['Web_Description__c'])) {
+      $mynode->body->value = $program['Web_Description__c'];
+    } elseif (!empty($program['hed__Extended_Description__c'])) {
+      $mynode->body->value = $program['hed__Extended_Description__c'];
+    } else {
+      $mynode->body->value = $program['hed__Description__c'];
+    }
+    $mynode->body->format = 'basic';
+
+    // Handle Category
+    $mynode->field_category = array();
+    if (!empty($program['Program_Category__c'])) {
+      $taxonomy = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties(['name' => $program['Program_Category__c'], 'vid' => 'category']);
+      if (!empty($taxonomy)) {
+        $taxonomy = array_keys($taxonomy)[0];
+      } else {
+        $taxonomy = Term::create(['name' => $program['Program_Category__c'], 'vid' => 'category'])->save();
+      }
+      $mynode->field_category[] = ['target_id' => $taxonomy];
+    }
+
+    // Handle Critical Issue
+    $mynode->field_critical_issue = array();
+    if (!empty($program['Critical_Issue__c'])) {
+      $taxonomy = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties(['name' => $program['Critical_Issue__c'], 'vid' => 'critical_issue']);
+      if (!empty($taxonomy)) {
+        $taxonomy = array_keys($taxonomy)[0];
+      } else {
+        $taxonomy = Term::create(['name' => $program['Critical_Issue__c'], 'vid' => 'critical_issue'])->save();
+      }
+      $mynode->field_critical_issue[] = ['target_id' => $taxonomy];
+    }
+
+    // Handle Program Area
+    $mynode->field_program_area = array();
+    if (!empty($program['hed__Account__r.Name'])) {
+      $taxonomy = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties(['name' => $program['hed__Account__r.Name'], 'vid' => 'program_area']);
+      if (!empty($taxonomy)) {
+        $taxonomy = array_keys($taxonomy)[0];
+      } else {
+        $taxonomy = Term::create(['name' => $program['hed__Account__r.Name'], 'vid' => 'program_area'])->save();
+      }
+      $mynode->field_program_area[] = ['target_id' => $taxonomy];
+    }
+/*
+    // Handle Critical Issue
+    if (!empty($program['Critical_Issue__c'])) {
+      $taxonomy = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties(['name' => $program['Critical_Issue__c'], 'vid' => 'critical_issue']);
+      if (empty($taxonomy)) {
+        $taxonomy = Term::create(['name' => $program['Critical_Issue__c'], 'vid' => 'critical_issue'])->save();
+      }
+      $mynode->field_critical_issue[] = ['target_id' => array_keys($taxonomy)[0]];
+    }
+
+    // Handle Program Area
+    if (!empty($program['hed__Account__r.Name'])) {
+      $taxonomy = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties(['name' => $program['hed__Account__r.Name'], 'vid' => 'program_area']);
+      if (empty($taxonomy)) {
+        $taxonomy = Term::create(['name' => $program['hed__Account__r.Name'], 'vid' => 'program_area'])->save();
+      }
+      $mynode->field_program_area[] = ['target_id' => array_keys($taxonomy)[0]];
+    }
+*/
+
+    $mynode->save();
+  }
+}
