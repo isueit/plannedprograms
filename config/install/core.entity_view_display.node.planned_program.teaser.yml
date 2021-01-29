@@ -1,0 +1,43 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.teaser
+    - field.field.node.planned_program.body
+    - field.field.node.planned_program.field_category
+    - field.field.node.planned_program.field_critical_issue
+    - field.field.node.planned_program.field_event_title_filter
+    - field.field.node.planned_program.field_mydata_id
+    - field.field.node.planned_program.field_program_area
+    - field.field.node.planned_program.field_stale
+    - field.field.node.planned_program.field_website
+    - node.type.planned_program
+  module:
+    - text
+    - user
+id: node.planned_program.teaser
+targetEntityType: node
+bundle: planned_program
+mode: teaser
+content:
+  body:
+    label: hidden
+    type: text_summary_or_trimmed
+    weight: 101
+    settings:
+      trim_length: 600
+    third_party_settings: {  }
+    region: content
+  links:
+    weight: 100
+    settings: {  }
+    third_party_settings: {  }
+    region: content
+hidden:
+  field_category: true
+  field_critical_issue: true
+  field_event_title_filter: true
+  field_mydata_id: true
+  field_program_area: true
+  field_stale: true
+  field_website: true
