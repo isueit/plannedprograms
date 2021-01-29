@@ -59,7 +59,6 @@ function plannedprograms_handle_feed() {
     // General Information
     $mynode->setTitle($program['Name']);
     $mynode->field_mydata_id->value = $program['Id'];
-    $mynode->set('field_stale', FALSE)->save();
     $mynode->field_event_title_filter->value = $program['Name'];
 
 
@@ -118,26 +117,18 @@ function plannedprograms_handle_feed() {
       }
       $mynode->field_program_area[] = ['target_id' => $taxonomy];
     }
-/*
-    // Handle Critical Issue
-    if (!empty($program['Critical_Issue__c'])) {
-      $taxonomy = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties(['name' => $program['Critical_Issue__c'], 'vid' => 'critical_issue']);
-      if (empty($taxonomy)) {
-        $taxonomy = Term::create(['name' => $program['Critical_Issue__c'], 'vid' => 'critical_issue'])->save();
-      }
-      $mynode->field_critical_issue[] = ['target_id' => array_keys($taxonomy)[0]];
-    }
 
-    // Handle Program Area
-    if (!empty($program['hed__Account__r.Name'])) {
-      $taxonomy = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties(['name' => $program['hed__Account__r.Name'], 'vid' => 'program_area']);
-      if (empty($taxonomy)) {
-        $taxonomy = Term::create(['name' => $program['hed__Account__r.Name'], 'vid' => 'program_area'])->save();
-      }
-      $mynode->field_program_area[] = ['target_id' => array_keys($taxonomy)[0]];
-    }
-*/
-
+    $mynode->set('field_stale', FALSE)->save();
+    $mynode->setPublished();
     $mynode->save();
+  }
+
+  // Unpublish nodes that are still marked "stale"
+  foreach ($nodes as $node) {
+    if ($node->get('field_stale')->value) {
+      $node->field_stale->value = FALSE;
+      $node->setUnpublished();
+      $node->save();
+    }
   }
 }
