@@ -5,5 +5,8 @@
     "repositories": {
         "type": "git",
         "url": "git@github.com:isueit/plannedprograms.git"
+    },
+    "require" : {
+        "drupal/pathauto": "^1.3"
     }
 }
