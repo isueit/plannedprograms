@@ -24,12 +24,14 @@ content:
   body:
     label: hidden
     type: text_default
-    weight: 1
+    weight: 0
     settings: {  }
-    third_party_settings: {  }
+    third_party_settings:
+      field_formatter_class:
+        class: pp-body
     region: content
   field_website:
-    weight: 2
+    weight: 1
     label: hidden
     settings:
       trim_length: 80
@@ -39,14 +41,9 @@ content:
       target: '0'
     third_party_settings:
       field_formatter_class:
-        class: ''
+        class: pp-link
     type: link
     region: content
-  links:
-    weight: 0
-    region: content
-    settings: {  }
-    third_party_settings: {  }
 hidden:
   field_category: true
   field_critical_issue: true
@@ -54,3 +51,4 @@ hidden:
   field_mydata_id: true
   field_program_area: true
   field_stale: true
+  links: true

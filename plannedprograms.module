@@ -70,7 +70,7 @@ function plannedprograms_handle_feed() {
       if ('htt' != substr($website,0,3)) {
         $website = 'https://' . $website;
       }
-      $mynode->field_website = ['uri' => $website, 'title' => 'More Information about Program', ];
+      $mynode->field_website = ['uri' => $website, 'title' => 'More About This Program', ];
     }
 
     // Handle Body
