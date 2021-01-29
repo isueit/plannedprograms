@@ -1,0 +1,5 @@
+plannedprograms:
+  version: 1.x
+  css:
+    layout:
+      css/plannedprograms.css: {}

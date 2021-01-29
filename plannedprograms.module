@@ -132,3 +132,15 @@ function plannedprograms_handle_feed() {
     }
   }
 }
+
+/*
+ * Implements hook_preprocess_node()
+ */
+function plannedprograms_preprocess_node(&$variables)
+{
+  $node = $variables['node'];
+  //check content type
+  if ($node->getType() == 'planned_program') {
+    $variables['#attached']['library'][] = 'plannedprograms/plannedprograms';
+  }
+}
