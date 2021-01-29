@@ -64,9 +64,13 @@ function plannedprograms_handle_feed() {
 
 
     // Handle website link
-    $mynode->field_website->value = $program['Planned_Program_Website__c'];
-    if (!empty($mynode->field_website->value) && 'htt' != substr($mynode->field_website->value,0,3)) {
-      $mynode->field_website->value = 'https://' . $mynode->field_website->value;
+    $mynode->field_website = array();
+    $website = $program['Planned_Program_Website__c'];
+    if (!empty($website)) {
+      if ('htt' != substr($website,0,3)) {
+        $website = 'https://' . $website;
+      }
+      $mynode->field_website = ['uri' => $website, 'title' => 'More Information about Program', ];
     }
 
     // Handle Body
