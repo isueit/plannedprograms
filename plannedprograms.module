@@ -119,7 +119,11 @@ function plannedprograms_handle_feed() {
     }
 
     $mynode->set('field_stale', FALSE)->save();
-    $mynode->setPublished();
+    if (empty($mynode->body->value)) {
+      $mynode->setUnpublished();
+    } else {
+      $mynode->setPublished();
+    }
     $mynode->save();
   }
 
