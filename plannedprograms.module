@@ -119,11 +119,7 @@ function plannedprograms_handle_feed() {
     }
 
     $mynode->set('field_stale', FALSE)->save();
-    if (empty($mynode->body->value)) {
-      $mynode->setUnpublished();
-    } else {
-      $mynode->setPublished();
-    }
+    $mynode->setPublished();
     $mynode->save();
   }
 
@@ -146,5 +142,17 @@ function plannedprograms_preprocess_node(&$variables)
   //check content type
   if ($node->getType() == 'planned_program') {
     $variables['#attached']['library'][] = 'plannedprograms/plannedprograms';
+  }
+}
+
+
+/*
+ * Implements hook_preprocess_views_view()
+ */
+function plannedprograms_preprocess_views_view(&$variables)
+{
+  $variables['#cache']['contexts'][] = 'route';
+  if ($variables['view_array']['#name'] == 'search_planned_programs') {
+    $variables['#attached']['library'][] = 'plannedprograms/plannedprograms-search';
   }
 }

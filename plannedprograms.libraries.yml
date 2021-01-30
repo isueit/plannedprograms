@@ -3,3 +3,9 @@ plannedprograms:
   css:
     layout:
       css/plannedprograms.css: {}
+
+plannedprograms-search:
+  version: 1.x
+  css:
+    layout:
+      css/plannedprograms-search.css: {}
